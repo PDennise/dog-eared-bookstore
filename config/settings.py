@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
+    'django.contrib.staticfiles',   
 
     "rest_framework",
 
@@ -81,6 +81,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"        # Use BigAutoField as the default primary key type.
 
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
