@@ -21,4 +21,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("api/", include("products.urls")),  # Expose product API endpoints under a shared /api/ prefix.
     path("api/", include("cart.urls")),  # Expose cart API endpoints under the same /api/ prefix.
+    path("api/", include("accounts.urls")),
 ]
