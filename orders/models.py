@@ -29,7 +29,7 @@ class Order(models.Model):
 
 
     def __str__(self):
-        return f" Order #{self.id}"
+        return f"Order #{self.id}"
 
 
 class OrderItem(models.Model):
