@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
+    path('', include("home.urls")),
     path('admin/', admin.site.urls),
     path("api/", include("products.urls")),     # Expose product API endpoints under the shared /api/ prefix.
     path("api/", include("cart.urls")),         # Expose cart API endpoints under the shared /api/ prefix.
