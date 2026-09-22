@@ -16,9 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from products.views import book_list
 
 urlpatterns = [
     path('', include("home.urls")),
+    path("books/", book_list, name="book_list"),
+    
     path('admin/', admin.site.urls),
     path("api/", include("products.urls")),     # Expose product API endpoints under the shared /api/ prefix.
     path("api/", include("cart.urls")),         # Expose cart API endpoints under the shared /api/ prefix.

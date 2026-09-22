@@ -2,6 +2,7 @@ from rest_framework import viewsets
 
 from .models import Book, Category
 from .serializers import BookSerializer, CategorySerializer
+from django.shortcuts import render
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -16,3 +17,13 @@ class BookViewSet(viewsets.ModelViewSet):
 
     queryset = Book.objects.all()
     serializer_class = BookSerializer
+
+
+def book_list(request):
+    books = Book.objects.filter(is_active=True).select_related("category")
+
+    return render(
+        request,
+        "books.html",
+        {"books": books},
+    )
