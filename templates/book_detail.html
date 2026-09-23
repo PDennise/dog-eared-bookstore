@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ book.name }} | Dog-Eared Bookstore
+{% endblock %}
+
+{% block content %}
+    <h1>{{ book.name }}</h1>
+
+    <p>Author: {{ book.author }}</p>
+    <p>Category: {{ book.category.name }}</p>
+    <p>ISBN: {{ book.isbn }}</p>
+    <p>Publisher: {{ book.publisher }}</p>
+    <p>Publication date: {{ book.publication_date }}</p>
+    <p>Price: €{{ book.price }}</p>
+    <p>Stock: {{ book.stock }}</p>
+
+    <p>{{ book.description }}</p>
+{% endblock %}

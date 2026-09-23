@@ -27,3 +27,13 @@ def book_list(request):
         "books.html",
         {"books": books},
     )
+
+
+def book_detail(request, slug):
+    book = Book.objects.get(slug=slug)
+
+    return render(
+        request,
+        "book_detail.html",
+        {"book": book},
+    )
