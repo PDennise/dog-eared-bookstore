@@ -13,6 +13,10 @@ Books | Dog-Eared Bookstore
             <p>Author: {{ book.author }}</p>
             <p>Category: {{ book.category.name }}</p>
             <p>Price: €{{ book.price }}</p>
+
+            <a href="{% url 'book_detail' book.slug %}">
+                View details
+            </a>
         </div>
     {% empty %}
         <p>No books available.</p>
