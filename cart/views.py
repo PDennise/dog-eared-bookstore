@@ -6,8 +6,8 @@ from .models import Cart, CartItem
 from .serializers import CartSerializer, CartItemSerializer
 
 
-class CartViewSet(viewsets.ModelViewSet):
-    """Provide cart API actions for the logged-in user."""
+class CartViewSet(viewsets.ReadOnlyModelViewSet):
+    """Provide read-only cart API actions for the logged-in user."""
 
     serializer_class = CartSerializer
     permission_classes = [IsAuthenticated]
@@ -15,11 +15,6 @@ class CartViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         # Each user only sees their own cart.
         return Cart.objects.filter(user=self.request.user)
-
-    def perform_create(self, serializer):
-        # Attach the cart to the current user automatically.
-        serializer.save(user=self.request.user)
-
 
 class CartItemViewSet(viewsets.ModelViewSet):
     """Provide CRUD API actions for items in the user's cart."""
