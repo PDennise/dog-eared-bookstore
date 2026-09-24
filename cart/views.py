@@ -1,5 +1,6 @@
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from .models import Cart, CartItem
 from .serializers import CartSerializer, CartItemSerializer
@@ -30,7 +31,34 @@ class CartItemViewSet(viewsets.ModelViewSet):
         # Only items that belong to the current user's cart.
         return CartItem.objects.filter(cart__user=self.request.user)
 
-    def perform_create(self, serializer):
-        # Get or create the user's cart, then add the item to it.
-        cart, _ = Cart.objects.get_or_create(user=self.request.user)
-        serializer.save(cart=cart)
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        book = serializer.validated_data["book"]
+        quantity = serializer.validated_data["quantity"]
+
+        cart, _ = Cart.objects.get_or_create(user=request.user)
+
+        cart_item = CartItem.objects.filter(
+            cart=cart,
+            book=book,
+        ).first()
+
+        if cart_item:
+            # Increase the existing quantity.
+            cart_item.quantity += quantity
+            cart_item.save(update_fields=["quantity"])
+
+            serializer.instance = cart_item
+
+        else:
+            # Create a new cart item.
+            serializer.save(cart=cart)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=headers,
+        )
