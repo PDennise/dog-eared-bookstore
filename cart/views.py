@@ -1,4 +1,4 @@
-from rest_framework import status, viewsets
+from rest_framework import serializers, status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -41,8 +41,21 @@ class CartItemViewSet(viewsets.ModelViewSet):
         ).first()
 
         if cart_item:
+            # Calculate the total quantity after adding the requested amount.
+            new_quantity = cart_item.quantity + quantity
+
+        else:
+            # For a new cart item, the requested quantity is the total quantity.
+            new_quantity = quantity
+
+        if new_quantity > book.stock:
+            raise serializers.ValidationError(
+                "Requested quantity exceeds available stock."
+            )
+
+        if cart_item:
             # Increase the existing quantity.
-            cart_item.quantity += quantity
+            cart_item.quantity = new_quantity
             cart_item.save(update_fields=["quantity"])
 
             serializer.instance = cart_item
