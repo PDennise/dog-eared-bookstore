@@ -16,7 +16,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Each user only sees their own order.
+        # Each user only sees their own orders.
         return Order.objects.filter(user=self.request.user)
 
     @transaction.atomic
@@ -30,7 +30,6 @@ class OrderViewSet(viewsets.ModelViewSet):
             )
 
         # Get the books and quantities from the cart.
-
         cart_items = list(
             cart.items.select_related("book").all()
         )
@@ -39,6 +38,26 @@ class OrderViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError(
                 {"detail": "Your cart is empty."}
             )
+
+        # Validate every cart item before creating the order.
+        for item in cart_items:
+            if not item.book.is_active:
+                raise serializers.ValidationError(
+                    {
+                        "detail": (
+                            f"{item.book.name} is no longer available."
+                        )
+                    }
+                )
+
+            if item.quantity > item.book.stock:
+                raise serializers.ValidationError(
+                    {
+                        "detail": (
+                            f"Not enough stock for {item.book.name}."
+                        )
+                    }
+                )
 
         # Attach the order to the current user automatically.
         # Create the order first.
@@ -60,6 +79,10 @@ class OrderViewSet(viewsets.ModelViewSet):
 
             total_price += item.book.price * item.quantity
 
+            # Reduce the book stock after the order item is created.
+            item.book.stock -= item.quantity
+            item.book.save(update_fields=["stock"])
+
         # Save the final order total.
         order.total_price = total_price
         order.save(update_fields=["total_price", "updated_at"])
@@ -76,4 +99,6 @@ class OrderItemViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Return only items belonging to the current user's orders."""
-        return OrderItem.objects.filter(order__user=self.request.user)    
+        return OrderItem.objects.filter(
+            order__user=self.request.user
+        )
