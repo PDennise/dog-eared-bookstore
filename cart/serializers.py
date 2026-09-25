@@ -20,8 +20,16 @@ class CartSerializer(serializers.ModelSerializer):
 
     # Include all items inside the cart response.
     items = CartItemSerializer(many=True, read_only=True)
+    total = serializers.SerializerMethodField()
+
 
     class Meta:
         model = Cart
-        fields = ["id", "user", "items", "created_at", "updated_at"]
-        read_only_fields = ["id", "user", "created_at", "updated_at"]
+        fields = ["id", "user", "items", "total", "created_at", "updated_at"]
+        read_only_fields = ["id", "user", "total", "created_at", "updated_at"]
+
+    def get_total(self, obj):
+        return sum(
+            item.book.price * item.quantity
+            for item in obj.items.all()
+        )
