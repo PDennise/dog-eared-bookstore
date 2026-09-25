@@ -33,6 +33,11 @@ class CartItemViewSet(viewsets.ModelViewSet):
         book = serializer.validated_data["book"]
         quantity = serializer.validated_data["quantity"]
 
+        if not book.is_active:
+            raise serializers.ValidationError(
+                "This book is not available."
+            )
+
         cart, _ = Cart.objects.get_or_create(user=request.user)
 
         cart_item = CartItem.objects.filter(
