@@ -1,7 +1,9 @@
 from django.db import transaction
 
-from rest_framework import serializers, viewsets
+from rest_framework import serializers, status, viewsets
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from cart.models import Cart
 
@@ -60,7 +62,6 @@ class OrderViewSet(viewsets.ModelViewSet):
                 )
 
         # Attach the order to the current user automatically.
-        # Create the order first.
         order = serializer.save(
             user=self.request.user,
             total_price=0,
@@ -89,6 +90,33 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         # Clear the cart after creating the order.
         cart.items.all().delete()
+
+    @action(detail=True, methods=["post"])
+    @transaction.atomic
+    def cancel(self, request, pk=None):
+        """Cancel a pending order and restore its stock."""
+
+        order = self.get_object()
+
+        # Only pending orders can be cancelled.
+        if order.status != Order.Status.PENDING:
+            raise serializers.ValidationError(
+                "Only pending orders can be cancelled."
+            )
+
+        # Restore the stock for every item in the order.
+        for item in order.items.all():
+            item.book.stock += item.quantity
+            item.book.save(update_fields=["stock"])
+
+        # Mark the order as cancelled.
+        order.status = Order.Status.CANCELLED
+        order.save()
+
+        return Response(
+            OrderSerializer(order).data,
+            status=status.HTTP_200_OK,
+        )
 
 
 class OrderItemViewSet(viewsets.ModelViewSet):
